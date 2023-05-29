@@ -19,6 +19,15 @@ func main() {
 	weatherController := controllers.NewWeather()
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
-	r.Get("/", weatherController.AirQuality)
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("welcome"))
+	})
+
+	r.Route("/weather/{lat}/{lon}", func(r chi.Router) {
+		r.Get("/", weatherController.AirQuality)
+	})
+	r.Route("/location/{name}", func(r chi.Router) {
+		r.Get("/", weatherController.Location)
+	})
 	http.ListenAndServe(":3000", r)
 }

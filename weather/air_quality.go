@@ -3,7 +3,6 @@ package weather
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -51,7 +50,6 @@ func GetAirQuality(lat, lon string) (List, error) {
 	if err != nil {
 		return List{}, err
 	}
-	fmt.Println(response)
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		return List{}, err

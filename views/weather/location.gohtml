@@ -1,0 +1,14 @@
+{{define "yield"}}
+  <div >
+    <h1>Suggested Locations</h1>
+    <ol>
+      {{range $val := .}}
+        <li>
+          <a href="/weather/{{$val.Lat}}/{{$val.Lon}}">{{$val.Name}}, {{$val.State}} {{$val.Country}}</a>
+        </li>
+      {{else}}
+        <h2>No locations match your search</h2>
+      {{end}}
+    </ol>
+  </div>
+{{end}}

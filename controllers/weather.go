@@ -1,9 +1,10 @@
 package controllers
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/jgsheppa/weather-app/views"
 	"github.com/jgsheppa/weather-app/weather"
 )
@@ -11,19 +12,34 @@ import (
 
 func NewWeather() *Weather {
 	return &Weather{
-		NewView: views.NewView("bootstrap", http.StatusFound, "/weather/air_quality"),
+		AirQualityView: views.NewView("bootstrap", http.StatusFound, "/weather/air_quality"),
+		LocationView: views.NewView("bootstrap", http.StatusFound, "/weather/location"),
 	}
 }
 
 type Weather struct {
-	NewView *views.View
+	AirQualityView *views.View
+	LocationView *views.View
 }
 
 func (we *Weather) AirQuality(w http.ResponseWriter, r *http.Request) {
-	data, err := weather.GetAirQuality("48.2082", "16.3738")
+	lat := chi.URLParam(r, "lat")
+	lon := chi.URLParam(r, "lon")
+
+	data, err := weather.GetAirQuality(lat, lon)
 	if err != nil {
-		fmt.Errorf("did not receive air quality data: %v", err)
+		log.Fatalf("did not receive air quality data: %v", err)
 	}
 
-	we.NewView.Render(w, r, data)
+	we.AirQualityView.Render(w, r, data)
+}
+
+func (we *Weather) Location(w http.ResponseWriter, r *http.Request) {
+	location := chi.URLParam(r, "name")
+	data, err := weather.GetLatAndLonByLocationName(location)
+	if err != nil {
+		log.Fatalf("did not receive location data: %v", err)
+	}
+
+	we.LocationView.Render(w, r, data)
 }

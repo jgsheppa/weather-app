@@ -12,22 +12,22 @@ import (
 
 func main() {
 	err := godotenv.Load()
-  if err != nil {
-    log.Fatal("Error loading .env file")
-  }
-	
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	weatherController := controllers.NewWeather()
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("welcome"))
-	})
+
+	r.Handle("/", weatherController.SearchView)
+	r.Post("/search", weatherController.LocationSearch)
 
 	r.Route("/weather/{lat}/{lon}", func(r chi.Router) {
-		r.Get("/", weatherController.AirQuality)
+		r.Get("/", weatherController.LocationData)
 	})
 	r.Route("/location/{name}", func(r chi.Router) {
-		r.Get("/", weatherController.Location)
+		r.Get("/", weatherController.LocationResults)
 	})
 	http.ListenAndServe(":3000", r)
 }

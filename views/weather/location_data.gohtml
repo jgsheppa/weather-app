@@ -1,0 +1,48 @@
+{{define "yield"}}
+  <div >
+    {{template "currentWeatherData" .}}
+    {{template "airQualityTable" .}}
+  </div>
+{{end}}
+
+{{define "currentWeatherData"}}
+<div>
+  <h2>Current Weather</h2>
+  <p>Visibility: {{.Current.Visibility}}</p>
+  <p>Wind: {{.Current.Wind.Speed}} km/h</p>
+</div>
+{{end}}
+
+{{define "airQualityTable"}}
+<div>
+  <h2>Current Air Quality: {{.AirQuality.Main.Description}}</h2>
+  <h3>Date: {{.AirQuality.Dt}}</h3>
+  <table class="table-auto border-2 border-black border-solid border-collapse">
+    <caption>Concentration of Chemical Components in Atmosphere</caption>
+    <thead >
+      <tr >
+        <th class="p-2 table-auto border-2 border-black border-solid border-collapse">Carbon monoxide (μg/m3)</th>
+        <th class="p-2 table-auto border-2 border-black border-solid border-collapse">NO (μg/m3)</th>
+        <th class="p-2 table-auto border-2 border-black border-solid border-collapse">NO<sub>2</sub> (μg/m3)</th>
+        <th class="p-2 table-auto border-2 border-black border-solid border-collapse">O<sub>3</sub> (μg/m3)</th>
+        <th class="p-2 table-auto border-2 border-black border-solid border-collapse">SO<sub>3</sub> (μg/m3)</th>
+        <th class="p-2 table-auto border-2 border-black border-solid border-collapse">PM<sub>2.5</sub> (μg/m3)</th>
+        <th class="p-2 table-auto border-2 border-black border-solid border-collapse">PM<sub>10</sub> (μg/m3)</th>
+        <th class="p-2 table-auto border-2 border-black border-solid border-collapse">NH<sub>3</sub> (μg/m3)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr >
+        <td class="p-2 table-auto border-2 border-black border-solid border-collapse">{{.AirQuality.Components.Co}}</td>
+        <td class="p-2 table-auto border-2 border-black border-solid border-collapse">{{.AirQuality.Components.No}}</td>
+        <td class="p-2 table-auto border-2 border-black border-solid border-collapse">{{.AirQuality.Components.No2}}</td>
+        <td class="p-2 table-auto border-2 border-black border-solid border-collapse">{{.AirQuality.Components.O3}}</td>
+        <td class="p-2 table-auto border-2 border-black border-solid border-collapse">{{.AirQuality.Components.So2}}</td>
+        <td class="p-2 table-auto border-2 border-black border-solid border-collapse">{{.AirQuality.Components.Pm25}}</td>
+        <td class="p-2 table-auto border-2 border-black border-solid border-collapse">{{.AirQuality.Components.Pm10}}</td>
+        <td class="p-2 table-auto border-2 border-black border-solid border-collapse">{{.AirQuality.Components.NH3}}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+{{end}}

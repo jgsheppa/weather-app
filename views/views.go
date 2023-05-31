@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	LayoutDir string = "views/layouts/"
+	LayoutDir   string = "views/layouts/"
 	TemplateDir string = "views/"
 	TemplateExt string = ".gohtml"
 )
@@ -34,15 +34,15 @@ func NewView(layout string, status int, files ...string) *View {
 
 	return &View{
 		Template: t,
-		Layout: layout,
-		Status: status,
+		Layout:   layout,
+		Status:   status,
 	}
 }
 
 type View struct {
 	Template *template.Template
-	Layout string
-	Status int
+	Layout   string
+	Status   int
 }
 
 func (v *View) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -63,13 +63,11 @@ func (v *View) Render(w http.ResponseWriter, r *http.Request, data interface{}) 
 			Yield: data,
 		}
 	}
-	
-	
+
 	var buf bytes.Buffer
 
-	template := v.Template.Funcs(template.FuncMap{
-	})
-	
+	template := v.Template.Funcs(template.FuncMap{})
+
 	if err := template.ExecuteTemplate(&buf, v.Layout, vd); err != nil {
 		http.Error(w, "Something went wrong", http.StatusInternalServerError)
 		return
@@ -77,7 +75,7 @@ func (v *View) Render(w http.ResponseWriter, r *http.Request, data interface{}) 
 	io.Copy(w, &buf)
 }
 
-// Returns a slice of strings 
+// Returns a slice of strings
 // representing the layout files
 func layoutFiles() []string {
 	files, err := filepath.Glob(LayoutDir + "*" + TemplateExt)

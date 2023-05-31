@@ -9,7 +9,7 @@ import (
 
 type TestCase struct {
 	want string
-	got string
+	got  string
 }
 
 func TestAirQualityDescription(t *testing.T) {
@@ -18,30 +18,30 @@ func TestAirQualityDescription(t *testing.T) {
 	testData := []TestCase{
 		{
 			want: weather.GetAirQualityDescription(1),
-			got: "Good",
+			got:  "Good",
 		},
 		{
 			want: weather.GetAirQualityDescription(2),
-			got: "Fair",
+			got:  "Fair",
 		},
 		{
 			want: weather.GetAirQualityDescription(3),
-			got: "Moderate",
+			got:  "Moderate",
 		},
 		{
 			want: weather.GetAirQualityDescription(4),
-			got: "Poor",
+			got:  "Poor",
 		},
 		{
 			want: weather.GetAirQualityDescription(5),
-			got: "Very Poor",
+			got:  "Very Poor",
 		},
 		{
 			want: weather.GetAirQualityDescription(6),
-			got: "Unable to retrieve air quality data",
+			got:  "Unable to retrieve air quality data",
 		},
 	}
-	
+
 	for _, testCase := range testData {
 		if !cmp.Equal(testCase.want, testCase.got) {
 			t.Error(cmp.Diff(testCase.want, testCase.got))
@@ -49,3 +49,18 @@ func TestAirQualityDescription(t *testing.T) {
 	}
 }
 
+func TestUrlBuilder(t *testing.T) {
+	t.Parallel()
+	params := map[string]string{
+		"appid": "apiKey",
+		"q":     "location",
+		"limit": "5",
+	}
+
+	got := weather.BuildWeatherUrl(weather.GeocodingUrl, params)
+	want := weather.BaseUrl + weather.GeocodingUrl + "?appid=apiKey&limit=5&q=location"
+
+	if !cmp.Equal(want, got) {
+		t.Error(cmp.Diff(want, got))
+	}
+}

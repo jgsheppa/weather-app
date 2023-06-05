@@ -1,2 +1,5 @@
 # ignore env files
 .env
+
+# used for hot-reloading with air
+/tmp

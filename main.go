@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -29,5 +30,9 @@ func main() {
 	r.Route("/location/{name}", func(r chi.Router) {
 		r.Get("/", weatherController.LocationResults)
 	})
-	http.ListenAndServe(":3000", r)
+	fmt.Println("application running on http://localhost:3001")
+	err = http.ListenAndServe(":3001", r)
+	if err != nil {
+		panic(err)
+	}
 }

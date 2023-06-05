@@ -55,6 +55,8 @@ func (we *Weather) LocationData(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("did not receive current weather data: %v", err)
 	}
 
+	current.Visibility = current.Visibility / 1000
+
 	data := weather.WeatherCollection{
 		Current:    current,
 		AirQuality: air,

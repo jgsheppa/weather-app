@@ -1,10 +1,9 @@
 {{define "yield"}}
-  <div>
-    <h1>Search</h1>
-    <form action="/search" method="POST">
-      <label for="search">Search for your city</label>
-      <input id="search" name="search" type="text" placeholder="Search"/>
-      <input type="submit">
+  <div class="flex flex-col items-center justify-center p-4">
+    <form class="grid grid-cols-1 gap-4" action="/search" method="POST">
+        <label class="block" for="search">Search for your city</label>
+        <input class="shadow border rounded p-2" id="search" name="search" type="text" placeholder="Search"/>
+      <input class="rounded border-solid border-2 border-sky-500 hover:cursor" type="submit">
     </form>
   </div>
 {{end}}

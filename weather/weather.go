@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
+	"time"
 )
 
 const (
@@ -20,6 +22,7 @@ const (
 type WeatherCollection struct {
 	Current    CurrentWeather
 	AirQuality AirQualityList
+	Forecast
 }
 
 type ApiParams struct {
@@ -29,6 +32,7 @@ type ApiParams struct {
 	Lang  string
 	Limit string
 	Q     string
+	Cnt   string
 }
 
 type WeatherData struct {
@@ -42,11 +46,16 @@ type Wind struct {
 	Speed float64 `json:"speed"`
 }
 
+type Rain struct {
+	OneHour   float64 `json:"1h"`
+	ThreeHour float64 `json:"3h"`
+}
+
 type WeatherMain struct {
-	Temp      string `json:"temp"`
-	FeelsLike string `json:"feels_like"`
-	TempMin   string `json:"temp_min"`
-	TempMax   string `json:"temp_max"`
+	Temp      float64 `json:"temp"`
+	FeelsLike float64 `json:"feels_like"`
+	TempMin   float64 `json:"temp_min"`
+	TempMax   float64 `json:"temp_max"`
 }
 
 type CurrentWeather struct {
@@ -54,6 +63,8 @@ type CurrentWeather struct {
 	Visibility int           `json:"visibility"`
 	Main       WeatherMain   `json:"main"`
 	Wind       Wind          `json:"wind"`
+	City       string        `json:"name"`
+	Rain       Rain          `json:"rain"`
 }
 
 func (a *ApiParams) GetCurrentWeatherForLocation() (CurrentWeather, error) {
@@ -168,6 +179,57 @@ func (a *ApiParams) GetAirQuality() (AirQualityList, error) {
 	data.AirQualityList[0].Main.Description = GetAirQualityDescription(data.AirQualityList[0].Main.Aqi)
 
 	return data.AirQualityList[0], nil
+}
+
+type Forecast struct {
+	List []ForecastList `json:"list"`
+}
+
+type ForecastList struct {
+	DateTime int64 `json:"dt"`
+	Hour     string
+	Main     WeatherMain   `json:"main"`
+	Weather  []WeatherData `json:"weather"`
+}
+
+func (a *ApiParams) GetForecast() (Forecast, error) {
+	apiKey := os.Getenv("OPEN_WEATHER_API")
+	var data Forecast
+
+	params := map[string]string{
+		"appid": apiKey,
+		"lat":   a.Lat,
+		"lon":   a.Lon,
+		"cnt":   "12",
+	}
+
+	urlWithParams := BuildWeatherUrl(ForecastUrl, params)
+
+	response, err := http.Get(urlWithParams)
+	if err != nil {
+		return Forecast{}, err
+	}
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		return Forecast{}, err
+	}
+	json.Unmarshal(body, &data)
+
+	if len(data.List) == 0 {
+		return Forecast{}, errors.New("received empty list for forecast data")
+	}
+
+	for i, point := range data.List {
+		t := time.Unix(point.DateTime, 0)
+		hour := strconv.Itoa(t.Hour())
+		if len(hour) == 1 {
+			data.List[i].Hour = "0" + hour + ".00"
+			continue
+		}
+		data.List[i].Hour = hour + ".00"
+	}
+
+	return data, nil
 }
 
 func GetAirQualityDescription(quality int) string {

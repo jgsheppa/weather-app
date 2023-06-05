@@ -57,9 +57,15 @@ func (we *Weather) LocationData(w http.ResponseWriter, r *http.Request) {
 
 	current.Visibility = current.Visibility / 1000
 
+	forecast, err := api.GetForecast()
+	if err != nil {
+		log.Fatalf("did not receive current weather data: %v", err)
+	}
+
 	data := weather.WeatherCollection{
 		Current:    current,
 		AirQuality: air,
+		Forecast:   forecast,
 	}
 
 	we.AirQualityView.Render(w, r, data)

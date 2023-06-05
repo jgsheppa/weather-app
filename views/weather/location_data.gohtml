@@ -1,20 +1,53 @@
 {{define "yield"}}
-  <div >
+  <div class="flex flex-col items-start justify-center p-4">
+    <h1>{{.Current.City}}</h1>
     {{template "currentWeatherData" .}}
+    {{template "forecastWeatherData" .}}
     {{template "airQualityTable" .}}
   </div>
 {{end}}
 
 {{define "currentWeatherData"}}
-<div>
+<div class="flex flex-col items-start justify-center">
   <h2>Current Weather</h2>
+  <p>Temp: {{.Current.Main.Temp}} &deg;C</p>
+  <p>Feels Like: {{.Current.Main.FeelsLike}} &deg;C</p>
+  <p>High: {{.Current.Main.TempMax}} &deg;C</p>
+  <p>Low: {{.Current.Main.TempMin}} &deg;C</p>
   <p>Visibility: {{.Current.Visibility}} km</p>
   <p>Wind: {{.Current.Wind.Speed}} meter/second</p>
+  <p>Rain 1h: {{.Current.Rain.OneHour}} mm</p>
+  <p>Rain 3h: {{.Current.Rain.ThreeHour}} mm</p>
 </div>
 {{end}}
 
+{{define "forecastWeatherData"}}
+<table>
+  <caption>Forecast</caption>
+  <thead >
+      <tr >
+        {{range $val := .List}}
+          <th class="p-2 table-auto border-2 border-black border-solid border-collapse">{{.Hour}}</th>
+        {{else}}
+          <th>No Information Found</th>
+        {{end}}
+      </tr>
+    </thead>
+    <tbody>
+      <tr >
+        {{range $val := .List}}
+          <td class="p-2 table-auto border-2 border-black border-solid border-collapse">{{(index .Weather 0).Main}}
+          </td>
+        {{else}}
+          <th>No Information Found</th>
+        {{end}}
+      </tr>
+    </tbody>
+</table>
+{{end}}
+
 {{define "airQualityTable"}}
-<div>
+<div class="flex flex-col items-start justify-center">
   <h2>Current Air Quality: {{.AirQuality.Main.Description}}</h2>
   <h3>Date: {{.AirQuality.Dt}}</h3>
   <table class="table-auto border-2 border-black border-solid border-collapse">

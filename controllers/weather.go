@@ -31,7 +31,7 @@ func (we *Weather) LocationSearch(w http.ResponseWriter, r *http.Request) {
 	}
 	city := r.PostFormValue("search")
 
-	http.Redirect(w, r, "/location/"+city, http.StatusFound)
+	http.Redirect(w, r, "/weather/location/"+city, http.StatusFound)
 }
 
 func (we *Weather) LocationData(w http.ResponseWriter, r *http.Request) {
@@ -83,4 +83,16 @@ func (we *Weather) LocationResults(w http.ResponseWriter, r *http.Request) {
 	}
 
 	we.LocationView.Render(w, r, data)
+}
+
+func (we *Weather) Routes() chi.Router {
+	r := chi.NewRouter()
+
+	r.Route("/", func(r chi.Router) {
+		r.Post("/search", we.LocationSearch)
+		r.Get("/{lat}/{lon}", we.LocationData)
+		r.Get("/location/{name}", we.LocationResults)
+	})
+
+	return r
 }

@@ -17,19 +17,14 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	weatherController := controllers.NewWeather()
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
-	r.Handle("/", weatherController.SearchView)
-	r.Post("/search", weatherController.LocationSearch)
+	r.Handle("/", controllers.NewWeather().SearchView)
 
-	r.Route("/weather/{lat}/{lon}", func(r chi.Router) {
-		r.Get("/", weatherController.LocationData)
-	})
-	r.Route("/location/{name}", func(r chi.Router) {
-		r.Get("/", weatherController.LocationResults)
-	})
+	r.Mount("/users", controllers.NewUser().Routes())
+	r.Mount("/weather", controllers.NewWeather().Routes())
+
 	fmt.Println("application running on http://localhost:3001")
 	err = http.ListenAndServe(":3001", r)
 	if err != nil {

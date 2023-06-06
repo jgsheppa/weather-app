@@ -23,11 +23,12 @@
 
 {{define "forecastWeatherData"}}
 <table>
-  <caption>Forecast</caption>
+  <caption>3-Hour Forecast</caption>
   <thead >
       <tr >
         {{range $val := .List}}
-          <th class="p-2 table-auto border-2 border-black border-solid border-collapse">{{.Hour}}</th>
+          <td class="p-2 table-auto border-2 border-black border-solid border-collapse">{{template "weatherIcons" .}}</td>
+          </td>
         {{else}}
           <th>No Information Found</th>
         {{end}}
@@ -36,8 +37,7 @@
     <tbody>
       <tr >
         {{range $val := .List}}
-          <td class="p-2 table-auto border-2 border-black border-solid border-collapse">{{(index .Weather 0).Main}}
-          </td>
+          <th class="p-2 table-auto border-2 border-black border-solid border-collapse">{{.HourLocale}}</th>
         {{else}}
           <th>No Information Found</th>
         {{end}}
@@ -78,4 +78,20 @@
     </tbody>
   </table>
 </div>
+{{end}}
+
+{{define "weatherIcons"}}
+  {{if (index .Weather 0).Main | eq "Rain"}}
+    <i class="fa-sharp fa-solid fa-cloud-rain"></i>
+  {{else if (index .Weather 0).Main | eq "Clouds"}}
+    <i class="fa-solid fa-cloud"></i>
+  {{else if (index .Weather 0).Main | eq "Clear"}}
+    {{if and (.Hour | le 7) (.Hour | ge 19)}}
+      <i class="fa-solid fa-cloud-sun"></i>
+    {{else}}
+      <i class="fa-solid fa-moon"></i>
+    {{end}}
+  {{else}}
+    <p>5: {{(index .Weather 0).Main}}</p>
+  {{end}}
 {{end}}

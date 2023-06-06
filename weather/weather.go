@@ -186,10 +186,11 @@ type Forecast struct {
 }
 
 type ForecastList struct {
-	DateTime int64 `json:"dt"`
-	Hour     string
-	Main     WeatherMain   `json:"main"`
-	Weather  []WeatherData `json:"weather"`
+	DateTime   int64 `json:"dt"`
+	Hour       int
+	HourLocale string
+	Main       WeatherMain   `json:"main"`
+	Weather    []WeatherData `json:"weather"`
 }
 
 func (a *ApiParams) GetForecast() (Forecast, error) {
@@ -221,12 +222,13 @@ func (a *ApiParams) GetForecast() (Forecast, error) {
 
 	for i, point := range data.List {
 		t := time.Unix(point.DateTime, 0)
+		data.List[i].Hour = t.Hour()
 		hour := strconv.Itoa(t.Hour())
 		if len(hour) == 1 {
-			data.List[i].Hour = "0" + hour + ".00"
+			data.List[i].HourLocale = "0" + hour + ".00"
 			continue
 		}
-		data.List[i].Hour = hour + ".00"
+		data.List[i].HourLocale = hour + ".00"
 	}
 
 	return data, nil

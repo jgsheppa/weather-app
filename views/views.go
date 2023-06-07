@@ -7,6 +7,9 @@ import (
 	"io"
 	"net/http"
 	"path/filepath"
+
+	"github.com/gorilla/csrf"
+	"github.com/jgsheppa/weather-app/context"
 )
 
 var (
@@ -64,9 +67,19 @@ func (v *View) Render(w http.ResponseWriter, r *http.Request, data interface{}) 
 		}
 	}
 
+	if alert := getAlert(r); alert != nil && vd.Alert == nil {
+		vd.Alert = alert
+		clearAlert(w)
+	}
+	vd.User = context.User(r.Context())
 	var buf bytes.Buffer
 
-	template := v.Template.Funcs(template.FuncMap{})
+	csrfField := csrf.TemplateField(r)
+	template := v.Template.Funcs(template.FuncMap{
+		"csrfField": func() template.HTML {
+			return csrfField
+		},
+	})
 
 	if err := template.ExecuteTemplate(&buf, v.Layout, vd); err != nil {
 		http.Error(w, "Something went wrong", http.StatusInternalServerError)

@@ -3,3 +3,6 @@
 
 # used for hot-reloading with air
 /tmp
+/vendor
+
+dev.db*

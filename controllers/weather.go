@@ -35,6 +35,7 @@ func (we *Weather) LocationSearch(w http.ResponseWriter, r *http.Request) {
 }
 
 func (we *Weather) LocationData(w http.ResponseWriter, r *http.Request) {
+	var vd views.Data
 	lat := chi.URLParam(r, "lat")
 	lon := chi.URLParam(r, "lon")
 
@@ -62,27 +63,31 @@ func (we *Weather) LocationData(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("did not receive current weather data: %v", err)
 	}
 
-	data := weather.WeatherCollection{
+	vd.Yield = weather.WeatherCollection{
 		Current:    current,
 		AirQuality: air,
 		Forecast:   forecast,
 	}
 
-	we.AirQualityView.Render(w, r, data)
+	we.AirQualityView.Render(w, r, vd)
 }
 
 func (we *Weather) LocationResults(w http.ResponseWriter, r *http.Request) {
+	var vd views.Data
+
 	location := chi.URLParam(r, "name")
 	api := weather.ApiParams{
 		Q:     location,
 		Limit: "10",
 	}
-	data, err := api.GetCoordinatesByLocationName()
+	coordinates, err := api.GetCoordinatesByLocationName()
 	if err != nil {
 		log.Fatalf("did not receive location data: %v", err)
 	}
 
-	we.LocationView.Render(w, r, data)
+	vd.Yield = coordinates
+
+	we.LocationView.Render(w, r, vd)
 }
 
 func (we *Weather) Routes() chi.Router {

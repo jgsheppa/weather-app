@@ -30,10 +30,9 @@ func main() {
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
-
 	r.Use(controllers.NewUser(s.User).AuthMiddleware)
-	r.Handle("/", controllers.NewWeather().SearchView)
 
+	r.Handle("/", controllers.NewWeather().SearchView)
 	r.Mount("/users", controllers.NewUser(s.User).Routes())
 	r.Mount("/weather", controllers.NewWeather().Routes())
 

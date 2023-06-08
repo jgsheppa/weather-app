@@ -26,21 +26,24 @@ type User struct {
 }
 
 func (u *User) LoginStatic(w http.ResponseWriter, r *http.Request) {
+	var vd views.Data
 	user := context.User(r.Context())
 	if user != nil {
 		http.Redirect(w, r, "/", http.StatusFound)
 	}
-	u.LoginView.Render(w, r, nil)
+	u.LoginView.Render(w, r, vd)
 }
 
 func (u *User) RegisterStatic(w http.ResponseWriter, r *http.Request) {
+	var vd views.Data
+
 	user := context.User(r.Context())
 	if user != nil {
 		http.Redirect(w, r, "/", http.StatusFound)
 	}
 	var form RegistrationForm
 	parseURLParams(r, &form)
-	u.RegisterView.Render(w, r, nil)
+	u.RegisterView.Render(w, r, vd)
 }
 
 func (u *User) Routes() chi.Router {
@@ -185,6 +188,7 @@ func (u *User) signIn(w http.ResponseWriter, user *models.User) error {
 		Value:    user.Remember,
 		HttpOnly: true,
 		Secure:   true,
+		Path:     "/",
 	}
 
 	http.SetCookie(w, &cookie)

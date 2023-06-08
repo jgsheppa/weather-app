@@ -9,3 +9,12 @@ func first(db *gorm.DB, dst interface{}) error {
 	}
 	return err
 }
+
+func runModelValFuncs[T User | Location](user *T, fns ...func(*T) error) error {
+	for _, fn := range fns {
+		if err := fn(user); err != nil {
+			return err
+		}
+	}
+	return nil
+}

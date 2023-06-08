@@ -58,17 +58,6 @@ func NewUserService(db *gorm.DB) UserService {
 	}
 }
 
-type userValFunc func(*User) error
-
-func runUserValFuncs(user *User, fns ...userValFunc) error {
-	for _, fn := range fns {
-		if err := fn(user); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 // This pattern ensures the type
 // and the pointer are always aligned
 var _ UserDB = &userValidator{}
@@ -92,7 +81,7 @@ func (uv *userValidator) ByEmail(email string) (*User, error) {
 	user := User{
 		Email: email,
 	}
-	if err := runUserValFuncs(&user, uv.normalizeEmail); err != nil {
+	if err := runModelValFuncs(&user, uv.normalizeEmail); err != nil {
 		return nil, err
 	}
 	return uv.UserDB.ByEmail(user.Email)
@@ -102,7 +91,7 @@ func (uv *userValidator) ByRemember(token string) (*User, error) {
 	user := User{
 		Remember: token,
 	}
-	if err := runUserValFuncs(&user, uv.setRememberIfUnset, uv.hmacRemember); err != nil {
+	if err := runModelValFuncs(&user, uv.setRememberIfUnset, uv.hmacRemember); err != nil {
 		return nil, err
 	}
 	return uv.UserDB.ByRemember(user.RememberHash)
@@ -111,7 +100,7 @@ func (uv *userValidator) ByRemember(token string) (*User, error) {
 // Will create the provided user
 func (uv *userValidator) Create(user *User) error {
 	// Order of functions passed in to validator is important!
-	err := runUserValFuncs(
+	err := runModelValFuncs(
 		user,
 		uv.passwordRequired,
 		uv.checkPasswordMinLength,
@@ -136,7 +125,7 @@ func (uv *userValidator) Create(user *User) error {
 // provided data in the user object
 func (uv *userValidator) Update(user *User) error {
 	// Order of functions passed in to validator is important!
-	err := runUserValFuncs(user,
+	err := runModelValFuncs(user,
 		uv.checkPasswordMinLength,
 		uv.bcryptPassword,
 		uv.passwordHashRequired,
@@ -157,7 +146,7 @@ func (uv *userValidator) Update(user *User) error {
 func (uv *userValidator) Delete(id uint) error {
 	var user User
 	user.ID = id
-	err := runUserValFuncs(&user, uv.idGreaterThanZero)
+	err := runModelValFuncs(&user, uv.idGreaterThanZero)
 	if err != nil {
 		return err
 	}

@@ -11,8 +11,9 @@ import (
 )
 
 type Services struct {
-	User UserService
-	db   *gorm.DB
+	User     UserService
+	Location LocationService
+	db       *gorm.DB
 }
 
 func NewServices(connectionInfo string) *Services {
@@ -40,12 +41,13 @@ func NewServices(connectionInfo string) *Services {
 	}
 
 	return &Services{
-		User: NewUserService(db),
-		db:   db,
+		User:     NewUserService(db),
+		Location: NewLocationService(db),
+		db:       db,
 	}
 }
 
 // Will attempt to automigrate all database tables
 func (s *Services) AutoMigrate() error {
-	return s.db.AutoMigrate(&User{})
+	return s.db.AutoMigrate(&User{}, &Location{})
 }

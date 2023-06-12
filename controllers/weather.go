@@ -5,25 +5,47 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/jgsheppa/weather-app/context"
+	"github.com/jgsheppa/weather-app/models"
 	"github.com/jgsheppa/weather-app/views"
 	"github.com/jgsheppa/weather-app/weather"
 )
 
-func NewWeather() *Weather {
-	return &Weather{
-		AirQualityView: views.NewView("bootstrap", http.StatusFound, "/weather/location_data"),
-		LocationView:   views.NewView("bootstrap", http.StatusFound, "/weather/location"),
-		SearchView:     views.NewView("bootstrap", http.StatusFound, "/weather/location_search"),
+func NewLocation(ls models.LocationService) *Location {
+	return &Location{
+		LocationDataView:   views.NewView("bootstrap", http.StatusFound, "/weather/location_data"),
+		LocationResultView: views.NewView("bootstrap", http.StatusFound, "/weather/location"),
+		SearchView:         views.NewView("bootstrap", http.StatusFound, "/weather/location_search"),
+		ls:                 ls,
 	}
 }
 
-type Weather struct {
-	AirQualityView *views.View
-	LocationView   *views.View
-	SearchView     *views.View
+type Location struct {
+	LocationDataView   *views.View
+	LocationResultView *views.View
+	SearchView         *views.View
+	ls                 models.LocationService
+	r                  chi.Router
 }
 
-func (we *Weather) LocationSearch(w http.ResponseWriter, r *http.Request) {
+func (l *Location) Home(w http.ResponseWriter, r *http.Request) {
+	var vd views.Data
+
+	user := context.User(r.Context())
+	if user == nil {
+		l.SearchView.Render(w, r, nil)
+	}
+	savedLocations, err := l.ls.GetByUserId(user.ID)
+	if err != nil {
+		vd.SetAlert(err)
+		return
+	}
+	vd.Yield = savedLocations
+	vd.User = user
+	l.SearchView.Render(w, r, vd)
+}
+
+func (l *Location) LocationSearch(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -34,7 +56,7 @@ func (we *Weather) LocationSearch(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/weather/location/"+city, http.StatusFound)
 }
 
-func (we *Weather) LocationData(w http.ResponseWriter, r *http.Request) {
+func (l *Location) LocationData(w http.ResponseWriter, r *http.Request) {
 	var vd views.Data
 	lat := chi.URLParam(r, "lat")
 	lon := chi.URLParam(r, "lon")
@@ -69,10 +91,10 @@ func (we *Weather) LocationData(w http.ResponseWriter, r *http.Request) {
 		Forecast:   forecast,
 	}
 
-	we.AirQualityView.Render(w, r, vd)
+	l.LocationDataView.Render(w, r, vd)
 }
 
-func (we *Weather) LocationResults(w http.ResponseWriter, r *http.Request) {
+func (l *Location) LocationResults(w http.ResponseWriter, r *http.Request) {
 	var vd views.Data
 
 	location := chi.URLParam(r, "name")
@@ -87,16 +109,44 @@ func (we *Weather) LocationResults(w http.ResponseWriter, r *http.Request) {
 
 	vd.Yield = coordinates
 
-	we.LocationView.Render(w, r, vd)
+	l.LocationResultView.Render(w, r, vd)
 }
 
-func (we *Weather) Routes() chi.Router {
+func (l *Location) Create(w http.ResponseWriter, r *http.Request) {
+	var vd views.Data
+
+	lon := r.URL.Query().Get("lon")
+	lat := r.URL.Query().Get("lat")
+	name := r.URL.Query().Get("name")
+
+	user := context.User(r.Context())
+
+	location := models.Location{
+		Lon:    lon,
+		Lat:    lat,
+		UserId: user.ID,
+		Name:   name,
+	}
+
+	err := l.ls.Create(&location)
+	if err != nil {
+		vd.SetAlert(err)
+		// TODO: make url prettier
+		http.Redirect(w, r, "/weather/"+name+"/"+lat+"/"+lon, http.StatusFound)
+		return
+	}
+	// TODO: make url prettier
+	http.Redirect(w, r, "/weather/"+name+"/"+lat+"/"+lon, http.StatusFound)
+}
+
+func (l *Location) Routes() chi.Router {
 	r := chi.NewRouter()
 
 	r.Route("/", func(r chi.Router) {
-		r.Post("/search", we.LocationSearch)
-		r.Get("/{lat}/{lon}", we.LocationData)
-		r.Get("/location/{name}", we.LocationResults)
+		r.Post("/search", l.LocationSearch)
+		r.Get("/{name}/{lat}/{lon}", l.LocationData)
+		r.Post("/location/save", l.Create)
+		r.Get("/location/{name}", l.LocationResults)
 	})
 
 	return r

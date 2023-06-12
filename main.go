@@ -32,9 +32,9 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(controllers.NewUser(s.User).AuthMiddleware)
 
-	r.Handle("/", controllers.NewWeather().SearchView)
+	r.Get("/", controllers.NewLocation(s.Location).Home)
 	r.Mount("/users", controllers.NewUser(s.User).Routes())
-	r.Mount("/weather", controllers.NewWeather().Routes())
+	r.Mount("/weather", controllers.NewLocation(s.Location).Routes())
 
 	fmt.Println("application running on http://localhost:3001")
 	err = http.ListenAndServe(":3002", r)

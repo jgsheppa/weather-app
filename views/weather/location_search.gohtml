@@ -1,9 +1,25 @@
 {{define "yield"}}
+<div class="flex items-center justify-between p-4">
   <div class="flex flex-col items-center justify-center p-4">
     <form class="grid grid-cols-1 gap-4" action="/weather/search" method="POST">
         <label class="block" for="search">Search for your city</label>
         <input class="shadow border rounded p-2" id="search" name="search" type="text" placeholder="Search"/>
       <input class="rounded border-solid border-2 border-sky-500 hover:cursor" type="submit">
     </form>
+  </div>
+  {{if .User}}
+    <div class="flex flex-col items-start justify-center p-4">
+      <h1>Saved Locations</h1>
+      <ol>
+        {{range $val := .Yield}}
+          <li tabindex="0">
+            <a href="/weather/{{$val.Name}}/{{$val.Lat}}/{{$val.Lon}}">{{$val.Name}}</a>
+          </li>
+        {{else}}
+          <h2>No locations match your search</h2>
+        {{end}}
+      </ol>
+    </div>
+  {{end}}
   </div>
 {{end}}

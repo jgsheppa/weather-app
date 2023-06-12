@@ -1,9 +1,12 @@
 {{define "yield"}}
   <div class="flex flex-col items-start justify-center p-4">
-    <h1>{{.Current.City}}</h1>
-    {{template "currentWeatherData" .}}
-    {{template "forecastWeatherData" .}}
-    {{template "airQualityTable" .}}
+    <h1>{{.Yield.Current.City}}</h1>
+    {{if .User}}
+      {{template "saveLocation" .Yield}}
+    {{end}}
+    {{template "currentWeatherData" .Yield}}
+    {{template "forecastWeatherData" .Yield}}
+    {{template "airQualityTable" .Yield}}
   </div>
 {{end}}
 
@@ -95,3 +98,10 @@
     <p>5: {{(index .Weather 0).Main}}</p>
   {{end}}
 {{end}}
+
+{{ define "saveLocation" }}
+  <form action="/weather/location/save?name={{.Current.City}}&lat={{.Current.Coord.Lat}}&lon={{.Current.Coord.Lon}}" method="POST">
+    {{csrfField}}
+    <button type="submit" class="rounded border-solid border-2 border-sky-500 p-2 hover:cursor">Save Location</button>
+  </form>
+{{end }}

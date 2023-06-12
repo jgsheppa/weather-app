@@ -65,6 +65,12 @@ type CurrentWeather struct {
 	Wind       Wind          `json:"wind"`
 	City       string        `json:"name"`
 	Rain       Rain          `json:"rain"`
+	Coord      Coordinates   `json:"coord"`
+}
+
+type Coordinates struct {
+	Lon float64 `json:"lon"`
+	Lat float64 `json:"lat"`
 }
 
 func (a *ApiParams) GetCurrentWeatherForLocation() (CurrentWeather, error) {

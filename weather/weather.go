@@ -23,6 +23,7 @@ type WeatherCollection struct {
 	Current    CurrentWeather
 	AirQuality AirQualityList
 	Forecast
+	IsSaved bool
 }
 
 type ApiParams struct {

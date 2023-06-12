@@ -26,9 +26,10 @@ type Alert struct {
 
 // This is used to pass dynamic data to HTML templates
 type Data struct {
-	Alert *Alert
-	User  *models.User
-	Yield interface{}
+	Alert    *Alert
+	User     *models.User
+	Location *models.Location
+	Yield    interface{}
 }
 
 func (d *Data) SetAlert(err error) {

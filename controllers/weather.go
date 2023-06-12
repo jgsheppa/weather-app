@@ -3,6 +3,7 @@ package controllers
 import (
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jgsheppa/weather-app/context"
@@ -85,10 +86,13 @@ func (l *Location) LocationData(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("did not receive current weather data: %v", err)
 	}
 
+	savedLocation, err := l.ls.FindByLonAndLat(current.Coord.Lon, current.Coord.Lat)
+
 	vd.Yield = weather.WeatherCollection{
 		Current:    current,
 		AirQuality: air,
 		Forecast:   forecast,
+		IsSaved:    savedLocation.IsSaved,
 	}
 
 	l.LocationDataView.Render(w, r, vd)
@@ -122,13 +126,47 @@ func (l *Location) Create(w http.ResponseWriter, r *http.Request) {
 	user := context.User(r.Context())
 
 	location := models.Location{
-		Lon:    lon,
-		Lat:    lat,
-		UserId: user.ID,
-		Name:   name,
+		Lon:     lon,
+		Lat:     lat,
+		UserId:  user.ID,
+		Name:    name,
+		IsSaved: true,
 	}
 
 	err := l.ls.Create(&location)
+	if err != nil {
+		vd.SetAlert(err)
+		// TODO: make url prettier
+		http.Redirect(w, r, "/weather/"+name+"/"+lat+"/"+lon, http.StatusFound)
+		return
+	}
+	// TODO: make url prettier
+	http.Redirect(w, r, "/weather/"+name+"/"+lat+"/"+lon, http.StatusFound)
+}
+
+func (l *Location) Delete(w http.ResponseWriter, r *http.Request) {
+	var vd views.Data
+
+	lon := r.URL.Query().Get("lon")
+	lat := r.URL.Query().Get("lat")
+	name := r.URL.Query().Get("name")
+
+	lonFloat, err := strconv.ParseFloat(lon, 64)
+	if err != nil {
+		vd.SetAlert(err)
+		return
+	}
+	latFloat, err := strconv.ParseFloat(lat, 64)
+	if err != nil {
+		vd.SetAlert(err)
+		return
+	}
+	location, err := l.ls.FindByLonAndLat(lonFloat, latFloat)
+	if err != nil {
+		vd.SetAlert(err)
+		return
+	}
+	err = l.ls.Delete(location.ID)
 	if err != nil {
 		vd.SetAlert(err)
 		// TODO: make url prettier
@@ -145,6 +183,7 @@ func (l *Location) Routes() chi.Router {
 	r.Route("/", func(r chi.Router) {
 		r.Post("/search", l.LocationSearch)
 		r.Get("/{name}/{lat}/{lon}", l.LocationData)
+		r.Post("/location/delete", l.Delete)
 		r.Post("/location/save", l.Create)
 		r.Get("/location/{name}", l.LocationResults)
 	})

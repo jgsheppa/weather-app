@@ -6,16 +6,18 @@ import (
 
 type Location struct {
 	gorm.Model
-	ID     uint   `gorm:"primaryKey"`
-	UserId uint   `gorm:"not_null;index"`
-	Lon    string `gorm:"not null; unique"`
-	Lat    string `gorm:"not null; unique"`
-	Name   string `gorm:"not null"`
+	ID      uint   `gorm:"primaryKey"`
+	UserId  uint   `gorm:"not_null;index"`
+	Lon     string `gorm:"not null; unique"`
+	Lat     string `gorm:"not null; unique"`
+	Name    string `gorm:"not null"`
+	IsSaved bool   `gorm:"not null"`
 }
 
 type LocationDB interface {
 	Create(location *Location) error
 	Delete(id uint) error
+	FindByLonAndLat(lon, lat float64) (Location, error)
 	GetByUserId(userId uint) ([]Location, error)
 }
 
@@ -82,6 +84,11 @@ func (lv *locationValidator) Create(location *Location) error {
 	return lv.LocationDB.Create(location)
 }
 
+func (lv *locationValidator) GetByLonAndLat(lon, lat float64) (Location, error) {
+	// TODO: does this need to be validated?
+	return lv.LocationDB.FindByLonAndLat(lon, lat)
+}
+
 func (lv *locationValidator) GetByUserId(userId uint) ([]Location, error) {
 	// Order of functions passed in to validator is important!
 	if userId <= 0 {
@@ -91,8 +98,10 @@ func (lv *locationValidator) GetByUserId(userId uint) ([]Location, error) {
 }
 
 func (lg *locationGorm) Delete(id uint) error {
-	location := Location{Model: gorm.Model{ID: id}}
-	return lg.db.Delete(&location).Error
+	location := Location{
+		IsSaved: false,
+	}
+	return lg.db.Delete(&location, id).Error
 }
 
 func (lg *locationGorm) GetByUserId(userID uint) ([]Location, error) {
@@ -102,4 +111,14 @@ func (lg *locationGorm) GetByUserId(userID uint) ([]Location, error) {
 		return nil, err
 	}
 	return locations, nil
+}
+
+func (lg *locationGorm) FindByLonAndLat(lon, lat float64) (Location, error) {
+	var location Location
+
+	err := lg.db.Where("lon = ? AND lat = ?", lon, lat).Find(&location).Error
+	if err != nil {
+		return Location{}, err
+	}
+	return location, nil
 }

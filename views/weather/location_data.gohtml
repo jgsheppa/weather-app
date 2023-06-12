@@ -100,8 +100,15 @@
 {{end}}
 
 {{ define "saveLocation" }}
-  <form action="/weather/location/save?name={{.Current.City}}&lat={{.Current.Coord.Lat}}&lon={{.Current.Coord.Lon}}" method="POST">
-    {{csrfField}}
-    <button type="submit" class="rounded border-solid border-2 border-sky-500 p-2 hover:cursor">Save Location</button>
-  </form>
-{{end }}
+  {{ if .IsSaved}}
+    <form action="/weather/location/delete?name={{.Current.City}}&lat={{.Current.Coord.Lat}}&lon={{.Current.Coord.Lon}}" method="POST">
+      {{csrfField}}
+      <button type="submit" class="rounded border-solid border-2 border-sky-500 p-2 hover:cursor">Remove Location</button>
+    </form>
+  {{else}}
+    <form action="/weather/location/save?name={{.Current.City}}&lat={{.Current.Coord.Lat}}&lon={{.Current.Coord.Lon}}" method="POST">
+      {{csrfField}}
+      <button type="submit" class="rounded border-solid border-2 border-sky-500 p-2 hover:cursor">Save Location</button>
+    </form>
+  {{end}}
+{{ end }}

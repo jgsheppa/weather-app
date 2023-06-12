@@ -37,7 +37,7 @@ func main() {
 	r.Mount("/weather", controllers.NewLocation(s.Location).Routes())
 
 	fmt.Println("application running on http://localhost:3001")
-	err = http.ListenAndServe(":3002", r)
+	err = http.ListenAndServe(":3003", r)
 	if err != nil {
 		panic(err)
 	}

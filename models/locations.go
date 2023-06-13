@@ -81,6 +81,7 @@ func (lv *locationValidator) Create(location *Location) error {
 	if err != nil {
 		return err
 	}
+
 	return lv.LocationDB.Create(location)
 }
 
@@ -98,10 +99,8 @@ func (lv *locationValidator) GetByUserId(userId uint) ([]Location, error) {
 }
 
 func (lg *locationGorm) Delete(id uint) error {
-	location := Location{
-		IsSaved: false,
-	}
-	return lg.db.Delete(&location, id).Error
+	location := Location{Model: gorm.Model{ID: id}}
+	return lg.db.Unscoped().Delete(&location, id).Error
 }
 
 func (lg *locationGorm) GetByUserId(userID uint) ([]Location, error) {

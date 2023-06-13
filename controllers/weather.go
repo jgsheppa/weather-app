@@ -34,7 +34,8 @@ func (l *Location) Home(w http.ResponseWriter, r *http.Request) {
 
 	user := context.User(r.Context())
 	if user == nil {
-		l.SearchView.Render(w, r, nil)
+		l.SearchView.Render(w, r, vd)
+		return
 	}
 	savedLocations, err := l.ls.GetByUserId(user.ID)
 	if err != nil {

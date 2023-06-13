@@ -1,12 +1,14 @@
 package controllers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jgsheppa/weather-app/context"
+	"github.com/jgsheppa/weather-app/ip"
 	"github.com/jgsheppa/weather-app/models"
 	"github.com/jgsheppa/weather-app/views"
 	"github.com/jgsheppa/weather-app/weather"
@@ -30,6 +32,20 @@ type Location struct {
 }
 
 func (l *Location) Home(w http.ResponseWriter, r *http.Request) {
+	r.Header.Set("X-REAL-IP", "77.141.137.113")
+	ipAddress := r.Header.Get("X-REAL-IP")
+	ipApi := ip.ApiParams{
+		IP: ipAddress,
+	}
+	geoLocation, err := ipApi.FindGeoLocation()
+
+	weatherApi := weather.ApiParams{
+		Lat: geoLocation.Lat,
+		Lon: geoLocation.Lon,
+	}
+	current, err := weatherApi.GetCurrentWeatherForLocation()
+	fmt.Printf("current weather: %v", current)
+
 	var vd views.Data
 
 	user := context.User(r.Context())
